@@ -3156,7 +3156,6 @@ func (s *Store) ServiceTopology(
 
 // combinedServiceNodesTxn returns typical and connect endpoints for a list of services.
 // This enabled aggregating checks statuses across both.
-// Returns a slice of ServiceNames not associated with a ServiceNode instance.
 func (s *Store) combinedServiceNodesTxn(tx ReadTxn, ws memdb.WatchSet, names []structs.ServiceName) (uint64, structs.CheckServiceNodes, error) {
 	var (
 		maxIdx uint64
@@ -3180,7 +3179,6 @@ func (s *Store) combinedServiceNodesTxn(tx ReadTxn, ws memdb.WatchSet, names []s
 		if idx > maxIdx {
 			maxIdx = idx
 		}
-
 		resp = append(resp, csn...)
 	}
 	return maxIdx, resp, nil
