@@ -3075,24 +3075,27 @@ func (s *Store) ServiceTopology(
 	}
 
 	downstreamDecisions := make(map[string]structs.IntentionDecisionSummary)
-	for _, svc := range intentionDownstreams {
-		if _, ok := downstreamSources[svc.Name.String()]; ok {
-			// Avoid duplicating entry
-			continue
-		}
-		downstreamNames = append(downstreamNames, svc.Name)
-		downstreamDecisions[svc.Name.String()] = svc.Decision
+	// Only transparent proxies have downstreams from intentions
+	if hasTransparent {
+		for _, svc := range intentionDownstreams {
+			if _, ok := downstreamSources[svc.Name.String()]; ok {
+				// Avoid duplicating entry
+				continue
+			}
+			downstreamNames = append(downstreamNames, svc.Name)
+			downstreamDecisions[svc.Name.String()] = svc.Decision
 
-		var source string
-		switch {
-		case svc.Decision.HasExact:
-			source = structs.TopologySourceSpecificIntention
-		case svc.Decision.DefaultAllow:
-			source = structs.TopologySourceDefaultAllow
-		default:
-			source = structs.TopologySourceWildcardIntention
+			var source string
+			switch {
+			case svc.Decision.HasExact:
+				source = structs.TopologySourceSpecificIntention
+			case svc.Decision.DefaultAllow:
+				source = structs.TopologySourceDefaultAllow
+			default:
+				source = structs.TopologySourceWildcardIntention
+			}
+			downstreamSources[svc.Name.String()] = source
 		}
-		downstreamSources[svc.Name.String()] = source
 	}
 
 	idx, unfilteredDownstreams, err := s.combinedServiceNodesTxn(tx, ws, downstreamNames)
